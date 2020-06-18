@@ -6,8 +6,6 @@ Free as freedom will be 26/8/2016
 @author: luisza
 '''
 
-from __future__ import unicode_literals
-
 from django import forms
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
@@ -19,7 +17,7 @@ from django.utils.decorators import method_decorator
 from laboratory.decorators import user_group_perms, view_user_group_perms
 # from laboratory.decorators import check_lab_permissions, user_lab_perms
 from laboratory.models import Object, SustanceCharacteristics
-from laboratory.utils import filter_laboratorist_technician
+from laboratory.utils import filter_laboratorist_profile
 from laboratory.views.djgeneric import CreateView, DeleteView, UpdateView, ListView
 from django.utils.translation import ugettext_lazy as _
 
@@ -163,7 +161,7 @@ class ObjectForm(ModelForm):
 
         super(ObjectForm, self).__init__(*args, **kwargs)
 
-        self.fields['laboratory'].queryset = filter_laboratorist_technician(self.request.user)
+        self.fields['laboratory'].queryset = filter_laboratorist_profile(self.request.user)
         self.fields['laboratory'].label = _("Available only on this laboratories if it is private")
         if self.request:
             if 'type_id' in self.request.GET:

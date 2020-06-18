@@ -1,5 +1,4 @@
 # encoding: utf-8
-from __future__ import unicode_literals
 
 from django import forms
 from django.conf.urls import url
@@ -188,9 +187,7 @@ class SelectLaboratoryView(FormView):
         # direct relationship
         if not organizations:
             organizations = []
-        labs = Laboratory.objects.filter(Q(students__pk=user.pk) |
-                                         Q(laboratorists__pk=user.pk) |
-                                         Q(principaltechnician__credentials=user.pk) |
+        labs = Laboratory.objects.filter(Q(profile__user=user) |
                                          Q(organization__in=organizations)
                                          ).distinct()
         return labs

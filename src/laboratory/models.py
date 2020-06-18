@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import ast
 import json
 
@@ -321,7 +319,7 @@ class OrganizationStructureManager(models.Manager):
 
     def filter_user(self, user):
         organizations = OrganizationStructure.objects.filter(
-            principaltechnician__credentials=user)
+            organizationusermanagement__users=user)
 
         orgs = None
         for org in organizations:
@@ -342,9 +340,6 @@ class OrganizationStructureManager(models.Manager):
 
 class OrganizationStructure(MPTTModel):
     name = models.CharField(_('Name'), max_length=255)
-    group = models.ForeignKey(
-        Group, blank=True, null=True, verbose_name=_("Group"),
-        on_delete=models.SET_NULL)
 
     parent = TreeForeignKey(
         'self', blank=True, null=True, verbose_name=_("Parent"),
@@ -375,35 +370,19 @@ class OrganizationStructure(MPTTModel):
         return labs
 
 
-
-class PrincipalTechnician(models.Model):
-    credentials = models.ManyToManyField(User)
-    name = models.CharField(_('Name'), max_length=255)
-    phone_number = models.CharField(_('Phone'), default='', max_length=25)
-    id_card = models.CharField(_('ID Card'), max_length=100)
-    email = models.EmailField(_('Email address'))
-
-    organization = TreeForeignKey(OrganizationStructure,
-                                  verbose_name=_("Organization"),
-                                  blank=True, null=True, on_delete=models.CASCADE)
-    assigned = models.ForeignKey(
-        'Laboratory', verbose_name=_("Assigned to"),
-        blank=True, null=True, on_delete=models.SET_NULL)
+class OrganizationUserManagement(models.Model):
+    group = models.ForeignKey(
+        Group, blank=True, null=True, verbose_name=_("Group"),
+        on_delete=models.SET_NULL)
+    organization = models.ForeignKey(
+        OrganizationStructure, verbose_name=_("Organization"), on_delete=models.CASCADE)
+    users = models.ManyToManyField(User, blank=True)
 
     class MPTTMeta:
-        order_insertion_by = ['name', ]
-
-    class Meta:
-        verbose_name = _('Principal Technician')
-        verbose_name_plural = _('Principal Technicians')
-        ordering = ['name']
+        order_insertion_by = ['organization__name', ]
 
     def __str__(self):
-        return "%s" % self.name
-
-    def __repr__(self):
-        return self.__str__()
-
+        return "%s" % self.organization.name
 
 
 class Laboratory(models.Model):
@@ -420,11 +399,6 @@ class Laboratory(models.Model):
     rooms = models.ManyToManyField(
         'LaboratoryRoom', verbose_name=_("Rooms"), blank=True)
 
-    laboratorists = models.ManyToManyField(
-        User, related_name='laboratorists', verbose_name=_("Laboratorists"), blank=True)
-
-    students = models.ManyToManyField(
-        User, related_name='students', verbose_name=_("Students"), blank=True)
 
     class Meta:
         verbose_name = _('Laboratory')
@@ -444,6 +418,14 @@ class Laboratory(models.Model):
         return self.__str__()
 
 
+class Profile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    phone_number = models.CharField(_('Phone'), default='', max_length=25)
+    id_card = models.CharField(_('ID Card'), max_length=100)
+    laboratories = models.ManyToManyField(Laboratory, verbose_name=_("Laboratories"), blank=True)
+
+    def __str__(self):
+        return '%s' % (self.user,)
 
 class Solution(models.Model):
     name = models.CharField(_('Name'), default='', max_length=255)
