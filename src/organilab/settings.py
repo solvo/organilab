@@ -95,6 +95,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'laboratory.middleware_permissions.SetUserPermissions',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 if DEBUG_TOOLBAR:
